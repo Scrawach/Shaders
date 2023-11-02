@@ -92,8 +92,8 @@ Shader "Practice/Clouds"
             fixed4 frag (v2f i) : SV_Target
             {
                 
-                fixed2 uv = i.uv * 16;
-                fixed time = _Time.y * 10;
+                fixed2 uv = i.uv * 8;
+                fixed time = _Time.y;
                 
                 fixed2 q = 0;
                 q.x = fbm(uv + 0);
@@ -110,7 +110,7 @@ Shader "Practice/Clouds"
                 fixed t3 = clamp(length(r.x), 0.0, 1.0);
                 
                 fixed4 color = lerp(fixed4(0.101961,0.619608,0.666667, 1.0), fixed4(0.666667,0.666667,0.498039, 1.0), t1);
-
+               
                 fixed4 col = tex2D(_MainTex, i.uv);
                 fixed noise = smoothstep(0.2, 1, f);
                 fixed f2 = fbm(uv + r * 3 + fixed2(time / 2, 0));
@@ -125,8 +125,11 @@ Shader "Practice/Clouds"
                 fixed test = fbm(uv + r + fixed2(time / 10, 0));
                 fixed smothTest = clamp(smoothstep(0, 1.0, test), 0, 1);
                 fixed4 color1 = lerp(0, col, pow(smothTest, 1.2));
-                
-                return color1;
+
+
+                color = lerp(color, fixed4(0, 0, 0.164706, 1), t2);
+                color = lerp(color, fixed4(0.66667, 1, 1, 1), t3);
+                return (f * f * f + .6 * f * f + .5 *f) *f;
             }
             ENDCG
         }
