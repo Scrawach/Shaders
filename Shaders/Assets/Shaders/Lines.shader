@@ -95,19 +95,33 @@ Shader "Practice/Lines"
                 y *= amplitude*0.06;
                 return y;
             }
+
+            float random(fixed2 pos)
+            {
+                return frac(sin(dot(pos.xy, float2(12.9898, 78.233))) * 43758.5453123);
+            }
+
+            fixed perlinNoise(fixed2 uv)
+            {
+                fixed2 numbers = floor(uv);
+                fixed2 fractions = frac(uv);
+
+                fixed a = random(numbers);
+                fixed b = random(numbers + fixed2(1, 0));
+                fixed c = random(numbers + fixed2(0, 1));
+                fixed d = random(numbers + fixed2(1, 1));
+
+                fixed2 u = fractions * fractions * (3.0 - 2.0 * fractions);
+                return lerp (a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+            }
             
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed2 uv = i.uv;
                 uv.x *= aspect(uv);
-                fixed x = uv.x;
-                fixed y = _Amplitude * sin(x * _Frequency + _Time.y) + 0.5;
-                y = randomSinFunction(x, _Time.y / 2, 0, _Amplitude, _Frequency) + 0.5;
-                fixed secondY = randomSinFunction(x, _Time.y / 2, 3.14, _Amplitude, _Frequency) + 0.5;
-                
-                fixed first = drawLine(uv.y + 0.2, y, 0.005) * _Color;
-                fixed second = drawLine(uv.y - 0.2, secondY, 0.005) * _Color;
-                return first + second;                
+
+                float y = 0.4 * frac(sin(uv.x + _Time.y) * 1.0) + 0.5;
+                return random(uv * _Time.y);            
             }
             ENDCG
         }
