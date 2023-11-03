@@ -209,12 +209,20 @@ Shader "Practice/Garbage"
                 fixed4 tex = tex2D(_MainTex, input.uv + fixed2(sin(_Time.y / 10) / 20, 0));
                 fixed sum = result + result1 + result3;
                 fixed final = transition_with_noise2(uv, f, progress);
-                fixed finalOuter = saturate(smoothstep(0.6, 0, final) + 0.2);
+                fixed finalOuter = saturate(smoothstep(0.6, 0, final));
                 fixed4 fore = tex2D(_Foreground, input.uv);
+
+
+                fixed f2 = fbm((uv / 10 + fixed2(sin(time / 10) / 2, 0)) * 6 + r * 2);
+                fixed mask1 = smoothstep(0.2, 0.6, f) * 1.2;
+                
                 fixed4 screen = finalOuter *smoothstep(0.35, 0.6, f) * tex;
 
                 
-                return blend(fore, screen);
+                fixed mask2 = smoothstep(0.2, 0.9, f2) * mask1 * finalOuter;
+
+                return mask2;
+                return blend(mask2 * tex, fore);
                 return pow(blend(fore / 2, screen), 0.8);
                 return finalOuter * smoothstep(0.1, 0.8, f) * tex;
             } 
