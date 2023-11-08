@@ -7,7 +7,6 @@ Shader "Practice/Garbage"
         _Foreground ("Foreground", 2D) = "white" {}
         _Progress ("Progress", range(0, 1)) = 0.0
         _TimeScale ("Time Scale", float) = 0.0
-        [NoScaleOffset] _FlowMap ("Flow (RG, A noise)", 2D) = "black" {}
     }
     SubShader
     {
@@ -42,9 +41,6 @@ Shader "Practice/Garbage"
 
             sampler2D _NoiseTex;
             float4 _NoiseTex_ST;
-
-            sampler2D _FlowMap;
-
             sampler2D _Foreground;
             
             float _Progress;
@@ -171,47 +167,37 @@ Shader "Practice/Garbage"
                 fixed radius = length(uv);
                 fixed sum = (radius + noise);
                 fixed result = sum - progress;
+                return result;
+                return smoothstep(0.2, 0.5, result);
                 return smoothstep(0, 0.5, result);
                 return fixed4(result, result, result, 1.0);
+            }
+
+            fixed4 overlayBlending(fixed4 a, fixed4 b)
+            {
+                if (a.x < 0.5)
+                    return 2 * a * b;
+                return 1 - 2 * (1 - a) * (1 - b);
             }
             
             fixed4 frag (v2f input) : SV_Target
             {
                 fixed time = _Time.y * _TimeScale;
                 fixed2 uv = screenUV(input.uv);
-                float2 flowVector = tex2D(_FlowMap, uv).rg * 2;
-                fixed flowNoise = tex2D(_FlowMap, uv).a;
-                //fixed2 flow = flowUV(uv / 5, flowVector, time);
-                //fixed4 noise = tex2D(_NoiseTex, flow);
-                
-                fixed3 uvwA = flowUVW(uv * 10, flowVector, time + flowNoise, false);
-                fixed3 uvwB = flowUVW(uv * 10, flowVector, time + flowNoise, true);
-                
-                
-                
-                fixed4 noise_uwvA = tex2D(_NoiseTex, uvwA.xy / 50 ) * uvwA.z;
-                fixed4 noise_uwvB = tex2D(_NoiseTex, uvwB.xy / 50 ) * uvwB.z;
-                fixed4 noise = (noise_uwvA + noise_uwvB);
-                //return noise;
 
-                fixed progress = _Progress + 0.5;
-                fixed result = transition_with_noise(uv,  noise, progress);
-                fixed result1 = transition_with_noise(uv + fixed2(0.5, -0.3),  noise, progress - 0.15);
-                fixed result3 = transition_with_noise(uv + fixed2(-0.5, 0.3),  noise, progress - 0.30);
+                fixed progress = (_Progress - 0.7) * 3 + 0.5;
 
                 fixed2 r = 0;
                 r.x = fbm( uv + 1.0 + fixed2(1.7,9.2)+ 0.15 * time);
                 r.y = fbm( uv + 1.0 + fixed2(8.3,2.8)+ 0.126 * time);
 
-                fixed f = fbm((uv + fixed2(sin(time / 10), 0)) * 6 + r * 2);
-
+                fixed f = fbm((uv + fixed2(sin(time / 10), 0)) + r * 2);
+                
                 
                 fixed4 tex = tex2D(_MainTex, input.uv + fixed2(sin(_Time.y / 10) / 20, 0));
-                fixed sum = result + result1 + result3;
                 fixed final = transition_with_noise2(uv, f, progress);
-                fixed finalOuter = saturate(smoothstep(0.6, 0, final));
+                fixed finalOuter = (1 - clamp(final, 0, 1));
                 fixed4 fore = tex2D(_Foreground, input.uv);
-
 
                 fixed f2 = fbm((uv / 10 + fixed2(sin(time / 10) / 2, 0)) * 6 + r * 2);
                 fixed mask1 = smoothstep(0.2, 0.6, f) * 1.2;
@@ -221,8 +207,22 @@ Shader "Practice/Garbage"
                 
                 fixed mask2 = smoothstep(0.2, 0.9, f2) * mask1 * finalOuter;
 
-                return mask2;
-                return blend(mask2 * tex, fore);
+                fixed mask1final = smoothstep(0.1, 0.5, mask1);
+                fixed mask1final2 = smoothstep(0.5, 0.9, mask1);
+                fixed border = (1 - mask1final2) - (1 - mask1final);
+                fixed maskResult = 1 - saturate((1 - mask1final) + border * 0.6);
+
+                mask2 = maskResult + 0.3;
+                fixed finalOuter1 = smoothstep(0.1, 0.8, finalOuter);
+
+                fixed finalBorders = finalOuter1 - finalOuter;
+
+                
+                finalOuter = finalBorders * 0.6 + finalOuter;
+
+                fixed maskOut =  min(mask2 * mask2, finalOuter);
+                //return mask2 * finalOuter;
+                return blend(maskOut * tex, fore / 2);
                 return pow(blend(fore / 2, screen), 0.8);
                 return finalOuter * smoothstep(0.1, 0.8, f) * tex;
             } 
