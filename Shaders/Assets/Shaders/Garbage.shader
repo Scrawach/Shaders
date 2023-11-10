@@ -179,6 +179,41 @@ Shader "Practice/Garbage"
                     return 2 * a * b;
                 return 1 - 2 * (1 - a) * (1 - b);
             }
+
+            float sine(fixed2 p, float o)
+            {
+                #define A .1 // Amplitude
+                #define V 8. // Velocity
+                #define W 3. // Wavelength
+                #define T .005 // Thickness
+                #define S 3. // Sharpness
+                return pow(T / abs((p.y + sin((p.x * W + o)) * A)), S);
+            }
+
+            float wave(float time, fixed amplitude, fixed2 uv, float phase) {
+                float wave = sin(time + uv.x * phase);
+                float blur = amplitude * smoothstep(.5, 0., abs(uv.x - 0.5));
+                uv.y += phase * blur * wave;
+                blur = smoothstep(-0.01, 0.2, blur);
+                fixed result = sine(uv * 2 - fixed2(0.5, 1.0), 0);
+                return clamp(result, 0, 1) * blur;
+            }
+
+            fixed maxFrom(fixed a, fixed b, fixed c)
+            {
+                fixed temp = max(a, b);
+                return max(temp, c);
+            }
+
+
+            fixed waveLines(fixed2 uv, fixed time)
+            {
+                fixed wave1 = wave(_Time.y / 4, 0.02, uv, 10 + sin(_Time.y / 5) * 1.5);
+                fixed wave2 = wave(_Time.y / 10, 0.08, uv, 5);
+                fixed wave3 = wave(-_Time.y / 17, 0.15, uv, 2.5) * 0.2;
+                return maxFrom(wave1, wave2, wave3);
+            }
+
             
             fixed4 frag (v2f input) : SV_Target
             {
@@ -221,8 +256,13 @@ Shader "Practice/Garbage"
                 finalOuter = finalBorders * 0.6 + finalOuter;
 
                 fixed maskOut =  min(mask2 * mask2, finalOuter);
+                fixed lines = waveLines(input.uv, _Time.y);
+                fixed maskedLines = lines * (1 - finalOuter);
+                maskedLines = lerp(maskedLines, 0, _Progress + 0.3);
+
+                fixed result = max(maskOut * tex, maskedLines);
                 //return mask2 * finalOuter;
-                return blend(maskOut * tex, fore / 2);
+                return blend(result, fore / 2);
                 return pow(blend(fore / 2, screen), 0.8);
                 return finalOuter * smoothstep(0.1, 0.8, f) * tex;
             } 
