@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 246535885}
   - component: {fileID: 246535887}
   - component: {fileID: 246535886}
+  - component: {fileID: 246535888}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -181,7 +182,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Sample Text
+  m_text: "<link=\"test\">Sample \nText some\nSomthing about</link>"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -258,6 +259,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 246535884}
   m_CullTransparentMesh: 1
+--- !u!114 &246535888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 246535884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab3f03e3ee70420399637755202b1b1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _text: {fileID: 246535886}
+  _underlineLinkTag: test
+  _templateUnderline: {fileID: 6209515483615573408, guid: e65bb996b280fcadabf1295953fb1a2e, type: 3}
+  HeightOffset: 1
+  Velocity: 1
 --- !u!1 &420316011
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,6 +456,7 @@ GameObject:
   - component: {fileID: 1644494191}
   - component: {fileID: 1644494190}
   - component: {fileID: 1644494189}
+  - component: {fileID: 1644494193}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -530,6 +549,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1644494193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644494188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a497ced957af12a74b3ca5f98d14079c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _underline: {fileID: 246535888}
 --- !u!1 &1684703852
 GameObject:
   m_ObjectHideFlags: 0
@@ -627,7 +659,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 528cc395dea2f88719600741e3d35d14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefab: {fileID: 5232014115376014731, guid: b137d01b2597a899a8dbb8b93c28c3a3, type: 3}
 --- !u!4 &1967163476
 Transform:
   m_ObjectHideFlags: 0
