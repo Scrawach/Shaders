@@ -14,9 +14,9 @@ public class UnderlineTextMeshPro : MonoBehaviour
     public float HeightOffset = 1;
     public float Velocity = 1;
 
+    private readonly List<GameObject> _underlines = new();
     private Coroutine _coroutine;
-    private List<GameObject> _underlines = new();
-    
+
     public void Play()
     {
         Stop();
@@ -37,9 +37,9 @@ public class UnderlineTextMeshPro : MonoBehaviour
     
     private IEnumerator UnderlinePlaying(float velocity)
     {
-        var points = FindPoints(_text.textInfo, _text.textInfo.linkInfo, _underlineLinkTag);
+        var points = CornerPoints(_text.textInfo, _text.textInfo.linkInfo, _underlineLinkTag).ToArray();
         for (var i = 0; i < points.Length; i += 2) 
-            yield return StartCoroutine(Underlining(points[i], points[i + 1], velocity));
+            yield return Underlining(points[i], points[i + 1], velocity);
     }
 
     private IEnumerator Underlining(Vector2 start, Vector2 end, float velocity)
@@ -60,46 +60,35 @@ public class UnderlineTextMeshPro : MonoBehaviour
             yield return null;
         }
     }
-
-    private Vector3[] FindPoints(TMP_TextInfo textInfo, IEnumerable<TMP_LinkInfo> info, string underlineTag)
+    
+    private static IEnumerable<Vector3> CornerPoints(TMP_TextInfo text, IEnumerable<TMP_LinkInfo> links, string linkTag)
     {
-        var result = new List<Vector3>();
-        var previousRight = Vector3.zero;
-        var isFirstLeftPoint = true;
-
-        foreach (var linkInfo in info.Where(link => link.GetLinkID() == underlineTag))
+        var firstCharacterOnLineIndexes = text.lineInfo.Select(c => c.firstCharacterIndex).ToArray();
+        
+        foreach (var link in links.Where(link => link.GetLinkID() == linkTag))
         {
-            var startIndex = linkInfo.linkTextfirstCharacterIndex;
-            var endIndex = linkInfo.linkTextfirstCharacterIndex + linkInfo.linkTextLength;
+            var startIndex = link.linkTextfirstCharacterIndex;
+            var endIndex = link.linkTextfirstCharacterIndex + link.linkTextLength;
+            var firstCharacter = text.characterInfo[startIndex];
+            var previousBottomRight = firstCharacter.bottomRight;
+            yield return firstCharacter.bottomLeft;
 
-            for (var i = startIndex; i < endIndex; i++)
+            for (var i = startIndex + 1; i < endIndex - 1; i++)
             {
-                var characterInfo = textInfo.characterInfo[i];
-                var leftPoint = characterInfo.bottomLeft;
-                var rightPoint = characterInfo.bottomRight;
+                var character = text.characterInfo[i];
+                var bottomLeft = character.bottomLeft;
+                var bottomRight = character.bottomRight;
 
-                if (isFirstLeftPoint)
+                if (firstCharacterOnLineIndexes.Contains(i))
                 {
-                    result.Add(leftPoint);
-                    isFirstLeftPoint = false;
-                }
-                
-                if (!char.IsLetter(characterInfo.character))
-                {
-                    result.Add(previousRight);
-                    isFirstLeftPoint = true;
+                    yield return previousBottomRight;
+                    yield return bottomLeft;
                 }
 
-                if (i == endIndex - 1)
-                {
-                    result.Add(rightPoint);
-                }
-
-                previousRight = rightPoint;
+                previousBottomRight = bottomRight;
             }
-            
-        }
 
-        return result.ToArray();
+            yield return text.characterInfo[endIndex - 1].bottomRight;
+        }
     }
 }
