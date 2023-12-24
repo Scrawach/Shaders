@@ -119,13 +119,18 @@
             {
                 return 1 - (1 - a) * (1 - b);
             }
+
+			fixed noise(fixed2 uv0, fixed2 uv1)
+			{
+				
+			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				const fixed3 inkColor = fixed3(0.01, 0.01, 0.1);
 				const fixed3 paperColor = fixed3(1.0, 0.98, 0.94);
 
-				const float speed = 0.075;
+				const float speed = 0.0175;
 				const float shadeContrast = 0.55;
 				
 				fixed2 uv = screenUV(i.uv);
@@ -134,8 +139,8 @@
 				float blot = fbm(p * 3.0 + 8.0);
 				float shade = fbm(p * 2.0 + 16.0);
 
-				fixed blot1 = saturate(fbm(p + 8.0));
-				fixed blot2 = saturate(fbm(p + 1230.1654));
+				fixed blot1 = saturate(fbm(p * 1.2 + 8.0));
+				fixed blot2 = saturate(fbm(p * 1 + 1230.1654));
 				fixed blot3 = saturate(fbm(p * 2 + 2231.0));
 				fixed blot4 = saturate(fbm(p * 4 + 126.0));
 
@@ -144,7 +149,7 @@
 				blot3 = smoothstep(0, 0.55, blot3);
 				blot4 = smoothstep(0, 0.05, blot4);
 				
-				blot = 0.5 * blot1 + 0.1 * blot2 + 0.02 * blot3;
+				blot = 0.5 * blot1 + 0.1 * blot2 + 0.02 * blot3 * 0.05 * blot4;
 				return 0.5 * smoothstep(0, 0.25, blot);
 				blot = (blot + (sqrt(uv.x) - abs(0.5 - uv.y)));
 				return blot;

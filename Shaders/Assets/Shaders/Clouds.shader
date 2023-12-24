@@ -125,7 +125,7 @@ Shader "Practice/Clouds"
                 fixed test = fbm(uv + r + fixed2(time / 10, 0));
                 fixed smothTest = clamp(smoothstep(0, 1.0, test), 0, 1);
                 fixed4 color1 = lerp(0, col, pow(smothTest, 1.2));
-
+                return color1;
 
                 color = lerp(color, fixed4(0, 0, 0.164706, 1), t2);
                 color = lerp(color, fixed4(0.66667, 1, 1, 1), t3);
