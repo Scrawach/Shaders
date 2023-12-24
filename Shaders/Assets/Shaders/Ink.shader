@@ -3,10 +3,13 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _NoiseTex ("Noise", 2D) = "white" {}
-        _Foreground ("Foreground", 2D) = "white" {}
-        _Progress ("Progress", range(0, 1)) = 0.0
-        _TimeScale ("Time Scale", float) = 0.0
+        _Octave1 ("Texture", 2D) = "white" {}
+        _Octave2 ("Texture", 2D) = "white" {}
+        _Octave3 ("Texture", 2D) = "white" {}
+        _Octave4 ("Texture", 2D) = "white" {}
+        _Emptiness ("Emptiness", float) = 0.0
+        _Sharpness ("Sharpness", float) = 0.0
+        _Speed ("Speed", float) = 0.0
     }
     SubShader
     {
@@ -31,224 +34,60 @@
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
                 float4 position : SV_POSITION;
+                float4 uv0 : TEXCOORD0;
+                float4 uv1 : TEXCOORD1;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            sampler2D _NoiseTex;
-            float4 _NoiseTex_ST;
-            sampler2D _Foreground;
+            sampler2D _Octave1;
+            float4 _Octave1_ST;
             
-            float _Progress;
-            fixed _TimeScale;
+            sampler2D _Octave2;
+            float4 _Octave2_ST;
+            
+            sampler2D _Octave3;
+            float4 _Octave3_ST;
+            
+            sampler2D _Octave4;
+            float4 _Octave4_ST;
 
+            float _Speed;
+            float _Emptiness;
+            float _Sharpness;
+            
             v2f vert (appdata v)
             {
+                fixed time = _Time.x;
                 v2f o;
                 o.position = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
+                o.uv0.xy = TRANSFORM_TEX(v.uv, _Octave1) + _Time.x * 1.0 * _Speed * half2(1.0, 0.0);
+                o.uv0.zw = TRANSFORM_TEX(v.uv, _Octave2) + _Time.x * 1.5 * _Speed * half2(0.0, 1.0);
+                o.uv1.xy = TRANSFORM_TEX(v.uv, _Octave3) + _Time.x * 2.0 * _Speed * half2(0.0, -1.0);
+                o.uv1.zw = TRANSFORM_TEX(v.uv, _Octave4) + _Time.x * 2.5 * _Speed * half2(-1.0, 0.0);
+
                 return o;
             }
-
-            fixed random(fixed2 pixel)
+                                    
+            fixed4 frag (v2f i) : SV_Target
             {
-                return frac(sin(dot(pixel, fixed2(12.9898, 78.233))) * 43758.5453123);
-            }
+                float4 n0 = tex2D(_Octave1, i.uv0.xy);
+                float4 n1 = tex2D(_Octave2, i.uv0.zw);
+                float4 n2 = tex2D(_Octave3, i.uv1.xy);
+                float4 n3 = tex2D(_Octave4, i.uv1.zw);
+                float4 fbm = 1.5 * n0 + 0.25 * n1 + 0.125 * n2 + 0.0625 * n3;
 
-            fixed perlinNoise(fixed2 pixel)
-            {
-                fixed2 i = floor(pixel);
-                fixed2 f = frac(pixel);
+                fbm = smoothstep(0.1, 0.5, fbm);
+                return fbm * fbm;
+                fbm = clamp(fbm, _Emptiness, _Sharpness) - _Emptiness;
+                fbm /= _Sharpness - _Emptiness;
 
-                fixed a = random(i);
-                fixed b = random(i + fixed2(1.0, 0.0));
-                fixed c = random(i + fixed2(0.0, 1.0));
-                fixed d = random(i + fixed2(1.0, 1.0));
-
-                fixed2 u = f * f * (3.0 - 2.0 * f);
-
-                return lerp(a, b, u.x) +
-                        (c - a)* u.y * (1.0 - u.x) +
-                        (d - b) * u.x * u.y;
-            }
-
-            #define NUM_OCTAVES 5
-            
-            fixed fbm(fixed2 pixel)
-            {
-                fixed v = 0.0;
-                fixed a = 0.5;
-                fixed2 shift = fixed2(100, 100);
-                fixed2x2 rotation = fixed2x2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
-
-                for (int i = 0; i < NUM_OCTAVES; ++i)
-                {
-                    v += a * perlinNoise(pixel);
-                    pixel = mul(rotation, pixel) * 2.0 + shift;
-                    a *= 0.5;
-                }
-
-                return v;
-            }
-
-            fixed4 blend(fixed4 a, fixed4 b)
-            {
-                return 1 - (1 - a) * (1 - b);
-            }
-
-            fixed2 screenUV(fixed2 uv)
-            {
-                fixed2 temp = uv * 2 - 1.0;
-                fixed dx = ddx(temp.x);
-                fixed dy = ddy(temp.y);
-                fixed aspect = dy / dx;
-                temp.x *= aspect;
-                return temp;
-            }
-
-            fixed4 transition_with_noise(fixed2 uv, fixed4 noise, fixed progress)
-            {
-                fixed add = sin(uv.x * 50) + sin(uv.y * 50);
-                add *= 0.01;
-                fixed radius = length(uv);
-                fixed sum = (radius + noise + add);
-                fixed result = sum < progress;
-                return fixed4(result, result, result, 1.0);
-            }
-
-            fixed2 flowUV (fixed2 uv, fixed2 flowVector, fixed time) {
-                fixed progress = frac(time);
-	            return uv + flowVector * progress;
-            }
-
-            fixed3 flowUVW (fixed2 uv, fixed2 flowVector, fixed time, bool flowB)
-            {
-                fixed phaseOffset = flowB ? 0.5 : 0;
-                fixed progress = frac(time + phaseOffset);
-                fixed3 uvw;
-                uvw.xy = uv + flowVector * progress + phaseOffset;
-                uvw.z = 1 - abs(1 - 2 * progress);
-                return uvw;
-            }
-
-            fixed4 frag2(v2f input) //: SV_Target
-            {
-                fixed time = _Time.y * _TimeScale;
-                fixed2 uv = screenUV(input.uv);
-                fixed radius = length(uv);
-                fixed circle = 0.1 / radius;
-                fixed result = smoothstep(0.2, 1, circle);
-
-
-                fixed4 noiseTexture = tex2D(_NoiseTex, uv / 10 + time);
-                noiseTexture = smoothstep(0.3, 0.9, noiseTexture);
-
-
-                fixed window = _Progress > radius;
-                fixed edge = _Progress + 0.1 > radius;
-                fixed resultCircle = edge - window;
-                return resultCircle * noiseTexture + window;
-                return result * noiseTexture;
-            }
-
-            float filmGrainNoise(in float time, in fixed2 uv)
-            {
-                return frac(sin(dot(uv, fixed2(12.9898, 78.233) * time)) * 43758.5453);
-            }
-
-
-            fixed4 transition_with_noise2(fixed2 uv, fixed noise, fixed progress)
-            {
-                fixed radius = length(uv);
-                fixed sum = (radius + noise);
-                fixed result = sum - progress;
-                return result;
-                return smoothstep(0.2, 0.5, result);
-                return smoothstep(0, 0.5, result);
-                return fixed4(result, result, result, 1.0);
-            }
-
-            fixed4 overlayBlending(fixed4 a, fixed4 b)
-            {
-                if (a.x < 0.5)
-                    return 2 * a * b;
-                return 1 - 2 * (1 - a) * (1 - b);
-            }
-
-            float sine(fixed2 p, float o)
-            {
-                #define A .1 // Amplitude
-                #define V 8. // Velocity
-                #define W 3. // Wavelength
-                #define T .005 // Thickness
-                #define S 3. // Sharpness
-                return pow(T / abs((p.y + sin((p.x * W + o)) * A)), S);
-            }
-
-            float wave(float time, fixed amplitude, fixed2 uv, float phase) {
-                float wave = sin(time + uv.x * phase);
-                float blur = amplitude * smoothstep(.5, 0., abs(uv.x - 0.5));
-                uv.y += phase * blur * wave;
-                blur = smoothstep(-0.01, 0.2, blur);
-                fixed result = sine(uv * 2 - fixed2(0.5, 1.0), 0);
-                return clamp(result, 0, 1) * blur;
-            }
-
-            fixed maxFrom(fixed a, fixed b, fixed c)
-            {
-                fixed temp = max(a, b);
-                return max(temp, c);
-            }
-
-
-            fixed waveLines(fixed2 uv, fixed time)
-            {
-                fixed wave1 = wave(_Time.y / 4, 0.02, uv, 10 + sin(_Time.y / 5) * 1.5);
-                fixed wave2 = wave(_Time.y / 10, 0.08, uv, 5);
-                fixed wave3 = wave(-_Time.y / 17, 0.15, uv, 2.5) * 0.2;
-                return maxFrom(wave1, wave2, wave3);
-            }
-
-            float rand(fixed2 co)
-            {
-                  float a = 12.9898;
-                  float b = 78.233;
-                  float c = 43758.5453;
-                  float dt= dot(co.xy ,fixed2(a,b));
-                  float sn= fmod(dt,3.14);
-                  return frac(sin(sn) * c);
-            }
-
-            float rand2(fixed2 co)
-            {
-                  return frac(sin(dot(co.xy,fixed2(12.9898,78.233))) * 43758.5453);
-            }
-
-            
-            fixed4 frag (v2f input) : SV_Target
-            {
-                fixed2 uv = input.uv * 10;
-                fixed time = _Time.y;
-                fixed col = tex2D(_NoiseTex, input.uv);
-                fixed noise = perlinNoise(input.uv);
-
-                fixed2 r = 0;
-                r.x = fbm( uv + 1.0 + fixed2(1.7,9.2)+ 0.15 * time);
-                r.y = fbm( uv + 1.0 + fixed2(8.3,2.8)+ 0.126 * time);
-
-                fixed f = fbm((uv + fixed2(sin(time / 10), 0)) + r * 2);
-
-                
-                fixed4 tex = tex2D(_MainTex, input.uv + fixed2(sin(_Time.y / 10) / 20, 0));
-                //fixed final = transition_with_noise2(uv, f, progress);
-
-                return perlinNoise(uv);
-                return fbm(input.uv * 10);
+                fbm = smoothstep(0, 1, fbm);
+                fixed fbm2 = smoothstep(0.1, .6, fbm);
+                fixed fbm3 = smoothstep(0.4, .6, fbm);
+                return fbm2 - fbm3;
             } 
             ENDCG
         }
