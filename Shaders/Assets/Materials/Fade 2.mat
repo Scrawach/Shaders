@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Fade Material
-  m_Shader: {fileID: 4800000, guid: 793a419c48481914197839b6bef84441, type: 3}
+  m_Name: Fade 2
+  m_Shader: {fileID: 4800000, guid: 5920d5947ea7486ba59f1091cb60824f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -47,6 +47,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: f1f08f47faa642ed48b6016f746ca3cd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Foreground:
+        m_Texture: {fileID: 2800000, guid: 79c687d532ec73d48923329764381eaf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -56,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 2800000, guid: 52c5ef66b4a6d9c4ab54eddfec39137d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8a158a2d5a58964c7b82262e92d9b6d1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -80,11 +84,11 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Progress: 1.47
+    - _Progress: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TimeScale: 0.2
+    - _TimeScale: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
