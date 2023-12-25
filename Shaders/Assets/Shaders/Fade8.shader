@@ -79,8 +79,9 @@ Shader "Practice/Fade8"
             {
                 fixed radius = length(uv);
                 //radius = smoothstep(0, 1, smoothstep(0, length(uv), progress));
-                fixed pattern = smoothstep(0, 1, 1 - radius + noise);
-                return pattern - ( 1 - progress);
+                fixed pattern = 1 - radius + noise;
+                pattern = pattern - ( 1 - progress);
+                return pattern;
             }
 
             fixed2 polar(fixed2 cartesian)
@@ -102,14 +103,13 @@ Shader "Practice/Fade8"
                 noise0Movement.y = cos(noiseMovementTime) + sin(noiseMovementTime * 1.6);
                 fixed noise0 = tex2D(_NoiseTex, uv / 4 + noise0Movement / 10);
                 noise0 *= noise0;
-                noise0 = 0;
-
                 
-                fixed maskTransition = (sin(_Time.y / 2) / 2 + 0.5) / 10;
-                fixed mask = smoothstep(0.1 + maskTransition, 0.3 + maskTransition, noise0);
+                fixed maskTransition = (sin(_Time.y / 2) / 2 + 0.5) / 5;
+                fixed mask = smoothstep(0.0 + maskTransition, 0.12 + maskTransition, noise0);
                 
                 fixed4 noise = tex2D(_NoiseTex, polarUv - timeOffset / 3);
-                noise *= noise;                
+                noise *= noise;
+                
                 fixed tran = transition_with_noise(uv, noise, _Progress);
                 
                 fixed f1 = smoothstep(0.1, 0.2, tran);
@@ -117,9 +117,10 @@ Shader "Practice/Fade8"
                 fixed f2 = smoothstep(0.3, 0.5, tran);
                 fixed f3 = smoothstep(0.6, 0.8, tran);
 
+
                 fixed4 tex = tex2D(_MainTex, i.uv);
                 
-                fixed m = 0.5 * f1 + 0.25 * f2 + 0.125 * f3 - 0.55 * (f1 * mask);
+                fixed m = 0.5 * f1 + 0.25 * f2 + 0.125 * f3 - 0.6 * (f1 * mask);
                 return m * tex;
             }
             ENDCG
