@@ -56,6 +56,28 @@ Shader "Practice/Fade8"
                 return temp;
             }
 
+            fixed random(fixed2 pixel)
+            {
+                return frac(sin(dot(pixel, fixed2(12.9898, 78.233))) * 43758.5453123);
+            }
+
+            fixed perlinNoise(fixed2 pixel)
+            {
+                fixed2 i = floor(pixel);
+                fixed2 f = frac(pixel);
+
+                fixed a = random(i);
+                fixed b = random(i + fixed2(1.0, 0.0));
+                fixed c = random(i + fixed2(0.0, 1.0));
+                fixed d = random(i + fixed2(1.0, 1.0));
+
+                fixed2 u = f * f * (3.0 - 2.0 * f);
+
+                return lerp(a, b, u.x) +
+                        (c - a)* u.y * (1.0 - u.x) +
+                        (d - b) * u.x * u.y;
+            }
+            
             fixed borderTest(fixed2 uv)
             {
                 uv = fixed2(atan2(uv.y, uv.x), length(uv));
@@ -103,11 +125,12 @@ Shader "Practice/Fade8"
                 noise0Movement.y = cos(noiseMovementTime) + sin(noiseMovementTime * 1.6);
                 fixed noise0 = tex2D(_NoiseTex, uv / 4 + noise0Movement / 10);
                 noise0 *= noise0;
+                noise0 = 0;
                 
                 fixed maskTransition = (sin(_Time.y / 2) / 2 + 0.5) / 5;
                 fixed mask = smoothstep(0.0 + maskTransition, 0.12 + maskTransition, noise0);
                 
-                fixed4 noise = tex2D(_NoiseTex, polarUv - timeOffset / 3);
+                fixed noise = tex2D(_NoiseTex, polarUv - timeOffset / 3);
                 noise *= noise;
                 
                 fixed tran = transition_with_noise(uv, noise, _Progress);
