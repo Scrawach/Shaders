@@ -101,7 +101,7 @@ Shader "Practice/Fade8"
             {
                 fixed radius = length(uv);
                 //radius = smoothstep(0, 1, smoothstep(0, length(uv), progress));
-                fixed pattern = 1 - radius + noise;
+                fixed pattern = smoothstep(0, 1, 1 - radius + noise);
                 pattern = pattern - ( 1 - progress);
                 return pattern;
             }
@@ -112,6 +112,17 @@ Shader "Practice/Fade8"
 				fixed angle = atan2(cartesian.y, cartesian.x);
 				return fixed2(angle / UNITY_TWO_PI + .5, distance * .2);
 			}
+
+            fixed movingNoise(fixed2 uv)
+            {
+                fixed2 noise0Movement;
+                fixed noiseMovementTime = _Time.y / 20;
+                noise0Movement.x =sin(noiseMovementTime) + cos(noiseMovementTime * 2.1);
+                noise0Movement.y = cos(noiseMovementTime) + sin(noiseMovementTime * 1.6);
+                fixed noise0 = tex2D(_NoiseTex, uv / 4 + noise0Movement / 10);
+                noise0 *= noise0;
+                return noise0;
+            }
             
             fixed4 frag (v2f i) : SV_Target
             {
@@ -119,13 +130,7 @@ Shader "Practice/Fade8"
                 fixed2 polarUv = polar(uv);
                 fixed2 timeOffset = fixed2(_Time.y / 100, _Time.y / 30);
 
-                fixed2 noise0Movement;
-                fixed noiseMovementTime = _Time.y / 20;
-                noise0Movement.x =sin(noiseMovementTime) + cos(noiseMovementTime * 2.1);
-                noise0Movement.y = cos(noiseMovementTime) + sin(noiseMovementTime * 1.6);
-                fixed noise0 = tex2D(_NoiseTex, uv / 4 + noise0Movement / 10);
-                noise0 *= noise0;
-                noise0 = 0;
+                fixed noise0 = movingNoise(uv) * 0;
                 
                 fixed maskTransition = (sin(_Time.y / 2) / 2 + 0.5) / 5;
                 fixed mask = smoothstep(0.0 + maskTransition, 0.12 + maskTransition, noise0);
