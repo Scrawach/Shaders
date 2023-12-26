@@ -103,16 +103,16 @@ Shader "Practice/FadeTransition"
                 fixed noiseMovementTime = _Time.y / 8;
                 fixed x =sin(noiseMovementTime) + cos(noiseMovementTime * 2.1);
                 fixed y = cos(noiseMovementTime) + sin(noiseMovementTime * 1.6);
-                fixed n = noisePattern(center - fixed2(x, y), noise2, noise2, _Progress);
+                fixed n = noisePattern(center - fixed2(x, y), noise2, noise2, _Progress/ 1.2);
                 n = smoothstep(0, 0.1, n);
 
                 noiseMovementTime = _Time.y / 10;
                 x = sin(noiseMovementTime * 4) - cos(noiseMovementTime * 2.1);
                 y = cos(noiseMovementTime * 1.234) - sin(noiseMovementTime / 6);
-                fixed m = noisePattern(center - fixed2(x, y), noise2, noise2, _Progress);
+                fixed m = noisePattern(center - fixed2(x, y), noise2, noise2, _Progress / 1.1);
                 m = smoothstep(0, 0.1, m);
 
-                fixed noises = max(m / 2, n / 2);
+                fixed noises = max(m / 1.5, n / 1.5);
                 fixed f = gradientFrom(pattern) - noises;
                 
 
