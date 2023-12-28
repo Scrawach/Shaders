@@ -87,6 +87,16 @@ Shader "Practice/FadeTransition"
             {
                 return 1 - (1 - a) * (1 - b);
             }
+
+            fixed lighten(fixed a, fixed b)
+            {
+                return max(a, b);
+            }
+
+            fixed darken(fixed a, fixed b)
+            {
+                return min(a, b);
+            }
             
             fixed4 frag (v2f i) : SV_Target
             {
@@ -123,11 +133,11 @@ Shader "Practice/FadeTransition"
                 y = sin(3 * noiseMovementTime + 2) + cos(4*noiseMovementTime);
                 fixed c2 = noisePattern(center - fixed2(x, y) / 2.5, noise2, noise2, _Progress / 1.1);
 
-                c2 = max(c, c2);
+                c2 = lighten(c, c2);
                 
-                fixed noises = max(m / 1.5, n / 1.5);
-                fixed lighten = max(c2, pattern);
-                fixed f = gradientFrom(lighten) - noises;
+                fixed blackMask = lighten(m / 1.5, n / 1.5);
+                fixed whiteMask = lighten(c2, pattern);
+                fixed f = gradientFrom(whiteMask) - blackMask;
                 
 
                 fixed4 tex = tex2D(_MainTex, i.uv);
