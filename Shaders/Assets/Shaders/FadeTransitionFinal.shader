@@ -7,6 +7,7 @@ Shader "Practice/FadeTransitionFinal"
         _NoiseStrength ("Noise Strength", float) = 0.5
         _OffsetX ("Offset X", float) = 0.0
         _OffsetY ("Offset Y", float) = 0.0
+        _IsDissolve ("Is Dissolve", range(0, 1)) = 0.0
         _TimeScale ("Time Scale", float) = 1.0
         _Progress ("Progress", range(0, 1)) = 0.0
     }
@@ -43,6 +44,8 @@ Shader "Practice/FadeTransitionFinal"
 
             fixed _OffsetX;
             fixed _OffsetY;
+
+            fixed _IsDissolve;
             
             v2f vert (appdata v)
             {
@@ -123,21 +126,25 @@ Shader "Practice/FadeTransitionFinal"
             
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed2 offset = fixed2(_OffsetX, _OffsetY) + fixed2(sin(_Time.y / 10), cos(_Time.y / 10)) / 2;
-                fixed2 uv = centerOfScreen(i.uv) + offset;
-                fixed2 polarUV = polar(uv);
+                fixed delta = + fixed2(sin(_Time.y / 10), cos(_Time.y / 10)) / 2;
+                fixed2 offset = fixed2(_OffsetX, _OffsetY);
+                fixed2 uv = centerOfScreen(i.uv);
+                fixed2 polarUV = polar(uv + offset);
                 fixed time = _Time.y * _TimeScale;
 
                 fixed2 noiseTimeOffset = fixed2(time / 100, time / 20);
                 fixed noise = tex2D(_NoiseTex, uv / 5 - noiseTimeOffset / 10);
+                
+                fixed mask1 = lerp(1, smoothstep(0, 0.25, noise - (1 - _Progress)), _IsDissolve);
+                fixed progress1 = lerp(_Progress, 1, _IsDissolve);
+                
                 fixed polarNoise = tex2D(_NoiseTex, polarUV * 4 - noiseTimeOffset);
-
-                fixed mask = pattern(uv, polarNoise, _Progress);
-                mask = lighten(mask, whiteMask(uv, polarNoise, time, _Progress));
-                mask = gradientFrom(mask) - blackMask(uv, noise, time, _Progress) / 1.5;
+                fixed mask = pattern(uv + offset, polarNoise, progress1);
+                mask = lighten(mask, whiteMask(uv, polarNoise, time, progress1));
+                mask = gradientFrom(mask) - blackMask(uv, noise, time, progress1) / 1.5;
 
                 fixed4 tex = tex2D(_MainTex, i.uv);
-                return mask * tex;
+                return mask1 * mask * tex;
             }
             ENDCG
         }
