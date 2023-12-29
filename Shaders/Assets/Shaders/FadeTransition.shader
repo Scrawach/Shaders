@@ -68,7 +68,7 @@ Shader "Practice/FadeTransition"
                 center.x *= 0.85;
                 fixed radius = length(center / progress);
                 fixed currentNoise = lerp(noise0, noise1 * NOISE_1_STRENGTH, progress);
-                fixed pattern = 1 - radius + currentNoise;
+                fixed pattern = 1 - radius +  noise1 * NOISE_1_STRENGTH;
                 fixed smoothed = smoothstep(0, 1, pattern);
                 
                 return smoothed;
