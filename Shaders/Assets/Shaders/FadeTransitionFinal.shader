@@ -3,8 +3,10 @@ Shader "Practice/FadeTransitionFinal"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _NoiseTex ("Noise Texture", 2D) = "white" {}
+        [NoScaleOffset] _NoiseTex ("Noise Texture", 2D) = "white" {}
         _NoiseStrength ("Noise Strength", float) = 0.5
+        _OffsetX ("Offset X", float) = 0.0
+        _OffsetY ("Offset Y", float) = 0.0
         _TimeScale ("Time Scale", float) = 1.0
         _Progress ("Progress", range(0, 1)) = 0.0
     }
@@ -38,6 +40,9 @@ Shader "Practice/FadeTransitionFinal"
             fixed _NoiseStrength;
             fixed _TimeScale;
             fixed _Progress;
+
+            fixed _OffsetX;
+            fixed _OffsetY;
             
             v2f vert (appdata v)
             {
@@ -118,7 +123,8 @@ Shader "Practice/FadeTransitionFinal"
             
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed2 uv = centerOfScreen(i.uv);
+                fixed2 offset = fixed2(_OffsetX, _OffsetY) + fixed2(sin(_Time.y / 10), cos(_Time.y / 10)) / 2;
+                fixed2 uv = centerOfScreen(i.uv) + offset;
                 fixed2 polarUV = polar(uv);
                 fixed time = _Time.y * _TimeScale;
 
