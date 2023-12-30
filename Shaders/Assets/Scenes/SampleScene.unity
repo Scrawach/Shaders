@@ -334,7 +334,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: c718050f54c54ef37ae677ec82a45290, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -502,6 +502,7 @@ GameObject:
   - component: {fileID: 1644494190}
   - component: {fileID: 1644494189}
   - component: {fileID: 1644494193}
+  - component: {fileID: 1644494194}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -601,12 +602,28 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1644494188}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a497ced957af12a74b3ca5f98d14079c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _underline: {fileID: 246535888}
+--- !u!114 &1644494194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644494188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7719ce533270ae74cbefd2d68e2e7d23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _image: {fileID: 420316013}
+  _a: {fileID: 21300000, guid: c718050f54c54ef37ae677ec82a45290, type: 3}
+  _b: {fileID: 21300000, guid: a3c7ae5a3f8c19ae1b2913cda0353203, type: 3}
+  _material: {fileID: 2100000, guid: e768044b51dd38f4c9b2d65859561059, type: 2}
 --- !u!1 &1684703852
 GameObject:
   m_ObjectHideFlags: 0
