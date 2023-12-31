@@ -23,41 +23,31 @@ public class SimplePlayer : MonoBehaviour
 
     private IEnumerator Playing()
     {
+        yield return ShowImage(_a);
+        yield return new WaitForSeconds(3);
+        yield return HideImage();
+        yield return ShowImage(_b);
+        yield return new WaitForSeconds(2);
+        yield return HideImage();
+    }
+
+    private IEnumerator ShowImage(Sprite image)
+    {
         var t = 0f;
         _material.SetFloat("_IsDissolve", 0.0f);
-        _image.sprite = _a;
+        _image.sprite = image;
         while (t < 1)
         {
             t += Time.deltaTime;
             _material.SetFloat("_Progress", t);
             yield return null;
         }
+    }
 
-        yield return new WaitForSeconds(3);
+    private IEnumerator HideImage()
+    {
         _material.SetFloat("_IsDissolve", 1.0f);
-        t = 0f;
-        while (t < 1 / 2f)
-        {
-            t += Time.deltaTime;
-            _material.SetFloat("_Progress", (1/2f - t) * 2);
-            yield return null;
-        }
-        
-        t = 0f;
-        _material.SetFloat("_IsDissolve", 0.0f);
-
-        _image.sprite = _b;
-        while (t < 1)
-        {
-            t += Time.deltaTime;
-            _material.SetFloat("_Progress", t);
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(2);
-        _material.SetFloat("_IsDissolve", 1.0f);
-
-        t = 0f;
+        var t = 0f;
         while (t < 1 / 2f)
         {
             t += Time.deltaTime;
