@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class SimplePlayer : MonoBehaviour
 {
+    private static readonly int IsDissolve = Shader.PropertyToID("_IsDissolve");
+    private static readonly int Progress = Shader.PropertyToID("_Progress");
+    
     [SerializeField] private Image _image;
     [SerializeField] private Sprite _a;
     [SerializeField] private Sprite _b;
@@ -34,24 +37,24 @@ public class SimplePlayer : MonoBehaviour
     private IEnumerator ShowImage(Sprite image)
     {
         var t = 0f;
-        _material.SetFloat("_IsDissolve", 0.0f);
+        _material.SetFloat(IsDissolve, 0.0f);
         _image.sprite = image;
         while (t < 1)
         {
             t += Time.deltaTime;
-            _material.SetFloat("_Progress", t);
+            _material.SetFloat(Progress, t);
             yield return null;
         }
     }
 
     private IEnumerator HideImage()
     {
-        _material.SetFloat("_IsDissolve", 1.0f);
+        _material.SetFloat(IsDissolve, 1.0f);
         var t = 0f;
         while (t < 1 / 2f)
         {
             t += Time.deltaTime;
-            _material.SetFloat("_Progress", (1/2f - t) * 2);
+            _material.SetFloat(Progress, (1/2f - t) * 2);
             yield return null;
         }
     }

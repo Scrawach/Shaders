@@ -122,7 +122,7 @@ Material:
     - _OffsetX: 0
     - _OffsetY: 0
     - _Parallax: 0.005
-    - _Progress: -0.00000035762787
+    - _Progress: -0.0002771616
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
